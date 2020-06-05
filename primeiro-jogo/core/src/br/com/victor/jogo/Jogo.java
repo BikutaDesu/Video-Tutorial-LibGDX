@@ -6,126 +6,122 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 
 public class Jogo extends ApplicationAdapter {
-	private SpriteBatch batch;
-	private OrthographicCamera camera;
-	
+	SpriteBatch batch;
+
 	private Integer pontuacao;
 	private String txtPontuacao;
-	
+
 	private Float tempoRestante;
 	private String txtTempoRestante;
-	
+
 	private Bolinha bolinha;
-	
+
 	private ProcessadorInput processadorInput;
-	
-	private BitmapFont fonte;
-	
+
+	private BitmapFont font;
+
 	private EstadoJogo estadoAtual = EstadoJogo.MENU;
-	
+
 	@Override
-	public void create () {
+	public void create() {
 		batch = new SpriteBatch();
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		
+
 		bolinha = new Bolinha(100f, 100f, 64f);
-		
+
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonte-pixel.ttf"));
+		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+		parameter.size = 22;
+		parameter.color = Color.WHITE;
+		font = generator.generateFont(parameter);
+
 		processadorInput = new ProcessadorInput(bolinha, this);
-		
-		FreeTypeFontGenerator geradorFonte = new FreeTypeFontGenerator(Gdx.files.internal("fonte-pixel.ttf"));
-		FreeTypeFontParameter configuracaoFonte = new FreeTypeFontParameter();
-		configuracaoFonte.size = 22;
-		configuracaoFonte.color = new Color(1,1,1,1);
-		fonte = geradorFonte.generateFont(configuracaoFonte);
-		
-		resetarVariaveis();
 		Gdx.input.setInputProcessor(processadorInput);
-		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		camera.update();
 	}
 
 	@Override
-	public void render () {
-		batch.setProjectionMatrix(camera.combined);
-		
+	public void render() {
 		switch (estadoAtual) {
 		case MENU:
-			Gdx.gl.glClearColor(.35f, .35f, .35f, 1);
+			Gdx.gl.glClearColor(0.35f, 0.35f, 0.35f, 1);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			batch.begin();
-			fonte.draw(batch, "JOGO DA BOLINHA", 270, Gdx.graphics.getHeight() - 200);
-			fonte.draw(batch, "APERTE UMA TECLA PARA INICIAR", 250, Gdx.graphics.getHeight() - 350);
+			font.draw(batch, "JOGO DAS BOLINHAS", 300, 400);
+			font.draw(batch, "APERTE UMA TECLA PARA INICIAR!!", 250, 300);
 			batch.end();
 			break;
-
 		case JOGO:
-			Gdx.gl.glClearColor(.35f, .35f, .35f, 1);
-			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-			
 			update(Gdx.graphics.getDeltaTime());
 			
-			bolinha.draw();
-			batch.begin();
-			fonte.draw(batch, txtPontuacao, 20, Gdx.graphics.getHeight() - 20);
-			fonte.draw(batch, txtTempoRestante, 20, Gdx.graphics.getHeight() - 60);
-			batch.end();
-			break;
-		case GAMEOVER:
-			Gdx.gl.glClearColor(0, 0f, 0f, 1);
+			Gdx.gl.glClearColor(0.35f, 0.35f, 0.35f, 1);
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			batch.begin();
-			fonte.draw(batch, "GAMEOVER", 270, Gdx.graphics.getHeight() - 200);
-			fonte.draw(batch, "APERTE UMA TECLA PARA VOLTAR AO MENU", 250, Gdx.graphics.getHeight() - 350);
+			font.draw(batch, txtPontuacao, 20, Gdx.graphics.getHeight() - 20);
+			font.draw(batch, txtTempoRestante, 20, Gdx.graphics.getHeight() - 50);
+			batch.end();
+			bolinha.draw();
+			break;
+		case GAMEOVER:
+			Gdx.gl.glClearColor(0, 0, 0, 1);
+			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+			batch.begin();
+			font.draw(batch, "GAMEOVER", 300, 400);
+			font.draw(batch, "APERTE UMA TECLA PARA VOLTAR AO MENU!!", 200, 300);
 			batch.end();
 			break;
 		}
-	}
-	
-	public void resetarVariaveis() {
-		tempoRestante = 10f;
-		pontuacao = 0;
 		
-		txtTempoRestante = "Tempo Restante: " + tempoRestante;
-		atualizarTexto();
 	}
-	
-	public void aumentarPontuacao() {
-		pontuacao++;
-		tempoRestante += 0.5f;
-		atualizarTexto();
-	}
-	
-	public void diminuirPontuacao() {
-		pontuacao--;
-		tempoRestante -= 0.3f;
-		atualizarTexto();
-	}
-	
-	private void atualizarTexto() {
-		txtPontuacao = "Pontuacao: " + pontuacao;
-	}
-	
-	public void update(Float delta) {
+
+	private void update(float delta) {
+		bolinha.update(delta);
+		tempoRestante -= delta;
 		if (tempoRestante <= 0) {
 			estadoAtual = EstadoJogo.GAMEOVER;
 		}
-		bolinha.update(delta);
-		tempoRestante -= delta;
-		txtTempoRestante = "Tempo Restante: " + new DecimalFormat("###.#").format(tempoRestante);
+		txtTempoRestante = "Tempo: " + new DecimalFormat("##.#").format(tempoRestante);
 	}
-	
+
+	public void aumentarPontuacao() {
+		pontuacao++;
+		tempoRestante += 0.5f;
+		atualizarPontuacao();
+	}
+
+	public void diminuirPontuacao() {
+		pontuacao--;
+		tempoRestante -= 0.3f;
+		atualizarPontuacao();
+	}
+
+	private void atualizarPontuacao() {
+		txtPontuacao = "Pontos: " + pontuacao;
+	}
+
 	@Override
-	public void dispose () {
-		fonte.dispose();
+	public void dispose() {
 		batch.dispose();
-		bolinha.dispose();
+	}
+
+	public void inicializarVariaveis() {
+		pontuacao = 0;
+		tempoRestante = 10f;
+		txtPontuacao = "Pontos: 0";
+		txtTempoRestante = "Tempo: ";
+		bolinha.setRaio(64f);
+	}
+
+	public Integer getPontuacao() {
+		return pontuacao;
+	}
+
+	public void setPontuacao(Integer pontuacao) {
+		this.pontuacao = pontuacao;
 	}
 
 	public EstadoJogo getEstadoAtual() {
@@ -135,8 +131,7 @@ public class Jogo extends ApplicationAdapter {
 	public void setEstadoAtual(EstadoJogo estadoAtual) {
 		this.estadoAtual = estadoAtual;
 	}
+	
+	
 
-	public Integer getPontuacao() {
-		return pontuacao;
-	}
 }

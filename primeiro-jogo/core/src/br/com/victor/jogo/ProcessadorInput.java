@@ -17,7 +17,7 @@ public class ProcessadorInput implements InputProcessor{
 	@Override
 	public boolean keyDown(int keycode) {
 		if (jogo.getEstadoAtual() == EstadoJogo.MENU) {
-			jogo.resetarVariaveis();
+			jogo.inicializarVariaveis();
 			jogo.setEstadoAtual(EstadoJogo.JOGO);
 		}else if (jogo.getEstadoAtual() == EstadoJogo.GAMEOVER) {
 			jogo.setEstadoAtual(EstadoJogo.MENU);
@@ -39,20 +39,18 @@ public class ProcessadorInput implements InputProcessor{
 
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		
-		if (button == 0) {
+		if (button == 0 && jogo.getEstadoAtual() == EstadoJogo.JOGO) {
 			float distancia = Vector2.dst(bolinha.getX(), bolinha.getY(), screenX, Gdx.graphics.getHeight() - screenY);
 			if (distancia <= bolinha.getRaio()) {
 				bolinha.teleportar();
-				bolinha.diminuirRaio();
 				jogo.aumentarPontuacao();
+				bolinha.diminuirRaio();
 			}else {
 				if (jogo.getPontuacao() > 0) {
 					jogo.diminuirPontuacao();
 				}
 			}
 		}
-		
 		return false;
 	}
 
